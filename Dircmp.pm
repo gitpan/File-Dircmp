@@ -14,12 +14,6 @@ use strict;
 
 my @diffs;
 
-#
-# TODO: add switch to compare the contents of files with the same name
-# in both directories and output a list telling what must be changed in
-# the two files to bring them into agreement.
-#
-
 ############################## dircmp() ##############################
 #
 # print directory differences
@@ -34,10 +28,8 @@ my @diffs;
 #
 sub dircmp
 {
-	my $d1 = $_[0];
-	my $d2 = $_[1];
-	#my $diff = $_[2];
-	my $suppress = $_[2];
+	my $d1 = shift;
+	my $d2 = shift;
 	
 	compare_dirs($d1, $d2);
 	
@@ -47,8 +39,8 @@ sub dircmp
 sub compare_dirs
 {
 	# get args
-	my $d1 = $_[0];
-	my $d2 = $_[1];
+	my $d1 = shift;
+	my $d2 = shift;
 
 	# find out what files are in directories
 	my %d1_files;
@@ -125,4 +117,39 @@ sub compare_dirs
 }
 
 1;
+
+=head1 NAME
+
+Dircmp - Use in place of dircmp command
+
+=head1 SYNOPSIS
+
+use File::Dircmp;
+
+dircmp("directory1", "directory2");
+
+The diffs are returned as an array of strings.
+
+=head1 DESCRIPTION
+
+I wrote File::Dircmp so I would not have to use the dircmp command, diff -r --brief on systems without dircmp.
+
+The algorithm I use orders the report differently than the other commands.
+
+=head1 TODO
+
+     -d        Compare the contents of files with the  same  name
+               in both directories and output a list telling what
+               must be changed in the two  files  to  bring  them
+               into  agreement.  The  list format is described in
+               diff(1).
+
+     -s        Suppress messages about identical files.
+
+     -w n      Change the width of the output line to  n  charac-
+               ters. The default width is  72.
+
+=head1 AUTHOR
+
+Josh Schulte <josh_schulte@yahoo.com>
 
