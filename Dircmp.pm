@@ -8,14 +8,20 @@ require Exporter;
 @EXPORT = qw(dircmp);
 
 use File::Basename;
-use File::Glob "bsd_glob";
 use File::Compare;
+use File::Glob "bsd_glob";
 use strict;
 
-my @diffs;
-my $d = 0;
-my $s = 0;
+my @g_diffs;
+my $g_d = 0;
+my $g_s = 0;
  
+#
+# TODO: implement switch to compare the contents of files with the same
+# name in both directories and output a list telling what must be changed
+# in the two files to bring them into agreement.
+#
+
 ############################## dircmp() ##############################
 #
 # print directory differences
@@ -36,24 +42,29 @@ sub dircmp
 	my $dodiff = shift;
 	my $suppress = shift;
 
-	$d = 1 if $dodiff;
-	$s = 1 if $suppress;
+	# need to reset global vars every time called
+	@g_diffs = ();
+	$g_d = 0;
+	$g_s = 0;
+
+	$g_d = 1 if $dodiff;
+	$g_s = 1 if $suppress;
 	
 	unless( -d $d1)
 	{
-		push(@diffs, "$d1 not a directory !");
-		return @diffs;
+		push(@g_diffs, "$d1 not a directory !");
+		return @g_diffs;
 	}
 
     unless( -d $d2)
     {
-        push(@diffs, "$d2 not a directory !");
-        return @diffs;
+        push(@g_diffs, "$d2 not a directory !");
+        return @g_diffs;
     }
 
 	compare_dirs($d1, $d2);
 	
-	return @diffs;
+	return @g_diffs;
 }
 
 sub compare_dirs
@@ -101,8 +112,8 @@ sub compare_dirs
 	}
 
 	# add missing files to the list
-	push(@diffs, "Only in $d1: $_") foreach @d1_only;
-	push(@diffs, "Only in $d2: $_") foreach @d2_only;
+	push(@g_diffs, "Only in $d1: $_") foreach @d1_only;
+	push(@g_diffs, "Only in $d2: $_") foreach @d2_only;
 
 	# compare common files
 	foreach my $x (keys %common)
@@ -114,14 +125,14 @@ sub compare_dirs
 		{
 			unless(compare($d1_file, $d2_file))
 			{
-				unless($s)
+				unless($g_s)
 				{
-					push(@diffs, "Files $d1_file and $d2_file are identical");
+					push(@g_diffs, "Files $d1_file and $d2_file are identical");
 				}
 			}
 			else
 			{
-				push(@diffs, "Files $d1_file and $d2_file differ");
+				push(@g_diffs, "Files $d1_file and $d2_file differ");
 			}
 		}
 		elsif((-d $d1_file) && (-d $d2_file))
@@ -130,11 +141,11 @@ sub compare_dirs
 		}
 		elsif((-f $d1_file) && (-d $d2_file))
 		{
-			push(@diffs, "File $d1_file is a regular file while file $d2_file is a directory");
+			push(@g_diffs, "File $d1_file is a regular file while file $d2_file is a directory");
 		}
 		elsif((-d $d1_file) && (-f $d2_file))
 		{
-			push(@diffs, "File $d1_file is a directory while file $d2_file is a regular file");
+			push(@g_diffs, "File $d1_file is a directory while file $d2_file is a regular file");
 		}
 	}
 }
