@@ -1,6 +1,12 @@
+6/4/2003 1.20
+
+Make sure directories passed in are directories and exist.
+Implement the -s switch, supress messages about identical files.
+
 6/4/2003 1.01
 
-Add test. Add pod documentaion.
+Add test.
+Add pod documentaion.
 
 6/3/2003 1.00
 

@@ -13,24 +13,44 @@ use File::Compare;
 use strict;
 
 my @diffs;
-
+my $d = 0;
+my $s = 0;
+ 
 ############################## dircmp() ##############################
 #
 # print directory differences
 #
 # arguments:
-#  first directory
-#  second directory
-#  1 to supress messages about identical files, 0 to show
+# first directory
+# second directory
+# 1 to show file diffs
+# 1 to suppress messages about identical files
 #
 # return:
-#  list of differences
+# list of differences
 #
 sub dircmp
 {
 	my $d1 = shift;
 	my $d2 = shift;
+	my $dodiff = shift;
+	my $suppress = shift;
+
+	$d = 1 if $dodiff;
+	$s = 1 if $suppress;
 	
+	unless( -d $d1)
+	{
+		push(@diffs, "$d1 not a directory !");
+		return @diffs;
+	}
+
+    unless( -d $d2)
+    {
+        push(@diffs, "$d2 not a directory !");
+        return @diffs;
+    }
+
 	compare_dirs($d1, $d2);
 	
 	return @diffs;
@@ -94,7 +114,10 @@ sub compare_dirs
 		{
 			unless(compare($d1_file, $d2_file))
 			{
-				push(@diffs, "Files $d1_file and $d2_file are identical");
+				unless($s)
+				{
+					push(@diffs, "Files $d1_file and $d2_file are identical");
+				}
 			}
 			else
 			{
@@ -120,34 +143,33 @@ sub compare_dirs
 
 =head1 NAME
 
-Dircmp - Use in place of dircmp command
+dircmp - directory comparison
 
 =head1 SYNOPSIS
 
 use File::Dircmp;
 
-dircmp("directory1", "directory2");
-
-The diffs are returned as an array of strings.
+@r = dircmp($dir1, $dir2, $diff, $suppress);
 
 =head1 DESCRIPTION
 
-I wrote File::Dircmp so I would not have to use the dircmp command, diff -r --brief on systems without dircmp.
+The dircmp command examines dir1 and dir2 and generates various tabulated information about the contents of the directories. Listings of files that are unique to each directory are generated for all the options. If no option is entered, a list is output indicating whether the file names common to both directories have the same contents. 
 
-The algorithm I use orders the report differently than the other commands.
+The algorithm I use orders the report differently than the unix commands. There is no option to control the length of the output.
+
+=head1 OPERANDS
+
+$dir1   A path name of a directory to be compared.
+
+$dir2   A path name of a directory to be compared.
+
+$diff   Compare the contents of files with the same name in both directories and output a list telling what must be changed in the two files to bring them into agreement. The list format is described in diff(1).
+
+$suppress   Suppress messages about identical files.
 
 =head1 TODO
 
-     -d        Compare the contents of files with the  same  name
-               in both directories and output a list telling what
-               must be changed in the two  files  to  bring  them
-               into  agreement.  The  list format is described in
-               diff(1).
-
-     -s        Suppress messages about identical files.
-
-     -w n      Change the width of the output line to  n  charac-
-               ters. The default width is  72.
+Implement the $diff argument.
 
 =head1 AUTHOR
 
